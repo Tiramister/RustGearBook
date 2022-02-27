@@ -2,6 +2,9 @@ mod args;
 mod logic;
 mod scanner;
 
+#[cfg(test)]
+mod tests;
+
 use args::Args;
 use clap::StructOpt;
 use log::info;
