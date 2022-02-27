@@ -1,6 +1,5 @@
+use super::Token;
 use log::info;
-
-use crate::parser::Token;
 
 pub fn calc(tokens: &[Token]) -> i64 {
     let mut stack = Vec::<i64>::new();

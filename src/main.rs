@@ -1,10 +1,8 @@
 mod args;
-mod calculator;
-mod parser;
+mod logic;
 mod scanner;
 
 use args::Args;
-use calculator::calc;
 use clap::StructOpt;
 use log::info;
 use scanner::scan;
@@ -23,13 +21,9 @@ fn main() {
     }
 
     let lines = scan(&opts.filename);
-    for line in lines {
+    for line in &lines {
         println!("Input:  {}", line);
-
-        let tokens = parser::parse(&line);
-        info!("Tokens: {:?}", tokens);
-
-        let result = calc(&tokens);
+        let result = logic::calc(line);
         println!("Result: {}", result);
     }
 }

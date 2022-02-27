@@ -1,3 +1,6 @@
+pub mod calculator;
+pub mod parser;
+
 use std::fmt;
 
 #[derive(Debug)]
@@ -34,6 +37,6 @@ impl fmt::Display for Token {
     }
 }
 
-pub fn parse(formula: &str) -> Vec<Token> {
-    formula.split_whitespace().map(Token::new).collect()
+pub fn calc(formula: &str) -> i64 {
+    calculator::calc(&parser::parse(formula))
 }
