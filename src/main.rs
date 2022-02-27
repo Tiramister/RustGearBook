@@ -1,4 +1,5 @@
 mod args;
+mod parser;
 mod scanner;
 
 use args::Args;
@@ -20,5 +21,7 @@ fn main() {
     let lines = scan(&opts.filename);
     for line in lines {
         println!("{}", line);
+        let tokens = parser::parse(&line);
+        info!("Tokens: {:?}", tokens);
     }
 }
