@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::Parser;
 
 /// Reverse Polish Notation (RPN) Calculator
@@ -10,5 +12,5 @@ pub struct Args {
 
     /// Formulas written in RPN
     #[clap(name = "FILE")]
-    pub filename: Option<String>,
+    pub filename: Option<PathBuf>,
 }

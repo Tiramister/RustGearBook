@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     env_logger::init();
 
     match &opts.filename {
-        Some(filename) => info!("File specified: {}", filename),
+        Some(filename) => info!("File specified: {:?}", filename),
         None => info!("No file specified."),
     }
 
