@@ -1,6 +1,7 @@
 pub mod calculator;
 pub mod parser;
 
+use anyhow::{Context, Result};
 use std::fmt;
 
 #[derive(Debug)]
@@ -12,17 +13,17 @@ pub enum Token {
 }
 
 impl Token {
-    fn new(symbol: &str) -> Token {
-        match symbol {
+    fn new(symbol: &str) -> Result<Token> {
+        Ok(match symbol {
             "+" => Token::Plus,
             "-" => Token::Minus,
             "*" => Token::Multiply,
             _ => Token::Number(
                 symbol
                     .parse::<i64>()
-                    .unwrap_or_else(|_| panic!("Invalid token: {}", symbol)),
+                    .with_context(|| format!("Invalid token: {}", symbol))?,
             ),
-        }
+        })
     }
 }
 
@@ -37,6 +38,6 @@ impl fmt::Display for Token {
     }
 }
 
-pub fn calc(formula: &str) -> i64 {
-    calculator::calc(&parser::parse(formula))
+pub fn calc(formula: &str) -> Result<i64> {
+    calculator::calc(&parser::parse(formula)?)
 }
