@@ -43,3 +43,6 @@ Temporary Items
 
 # Local History for Visual Studio Code
 .history/
+
+# Dev Container Config Files
+.devcontainer
