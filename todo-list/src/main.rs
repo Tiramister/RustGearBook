@@ -1,8 +1,11 @@
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder, ResponseError};
+use actix_web::{
+    get, http::header, post, web, App, HttpResponse, HttpServer, Responder, ResponseError,
+};
 use askama::Template;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::params;
+use serde::Deserialize;
 use thiserror::Error;
 
 /// Todo リストのエントリー
@@ -32,10 +35,10 @@ enum MyError {
 }
 impl ResponseError for MyError {}
 
-/// Todo リストを表示するハンドラ
+/// Todoリストを表示するハンドラ
 #[get("/")]
-async fn index(db: web::Data<Pool<SqliteConnectionManager>>) -> Result<impl Responder, MyError> {
-    let conn = db.get()?;
+async fn index(pool: web::Data<Pool<SqliteConnectionManager>>) -> Result<impl Responder, MyError> {
+    let conn = pool.get()?;
 
     // データを取得
     let mut stmt = conn.prepare("SELECT id, text FROM todo")?;
@@ -58,6 +61,50 @@ async fn index(db: web::Data<Pool<SqliteConnectionManager>>) -> Result<impl Resp
         .body(response_body))
 }
 
+/// addリクエストのリクエストボディ
+#[derive(Deserialize)]
+struct AddParams {
+    text: String,
+}
+
+/// ポストを追加するハンドラ
+#[post("/add")]
+async fn add(
+    params: web::Form<AddParams>,
+    pool: web::Data<Pool<SqliteConnectionManager>>,
+) -> Result<impl Responder, MyError> {
+    // データベースへ追加
+    let conn = pool.get()?;
+    conn.execute("INSERT INTO todo (text) VALUES (?)", &[&params.text])?;
+
+    // indexへリダイレクト
+    Ok(HttpResponse::SeeOther()
+        .append_header((header::LOCATION, "/"))
+        .finish())
+}
+
+/// deleteリクエストのリクエストボディ
+#[derive(Deserialize)]
+struct DeleteParams {
+    id: u32,
+}
+
+/// ポストを削除するハンドラ
+#[post("/delete")]
+async fn delete(
+    params: web::Form<DeleteParams>,
+    pool: web::Data<Pool<SqliteConnectionManager>>,
+) -> Result<impl Responder, MyError> {
+    // データベースから削除
+    let conn = pool.get()?;
+    conn.execute("DELETE FROM todo WHERE id=?", &[&params.id])?;
+
+    // indexへリダイレクト
+    Ok(HttpResponse::SeeOther()
+        .append_header((header::LOCATION, "/"))
+        .finish())
+}
+
 #[actix_rt::main]
 async fn main() -> Result<(), actix_web::Error> {
     // データベースへのコネクションプールを作成
@@ -77,10 +124,12 @@ async fn main() -> Result<(), actix_web::Error> {
     )
     .expect("Failed to create a table `todo`.");
 
-    // アプリケーションにコネクションを渡す
+    // 各ハンドラがこのコネクションプールを使えるように、アプリケーションに渡す
     HttpServer::new(move || {
         App::new()
             .service(index)
+            .service(add)
+            .service(delete)
             .app_data(web::Data::new(pool.clone()))
     })
     .bind(("0.0.0.0", 8080))?
