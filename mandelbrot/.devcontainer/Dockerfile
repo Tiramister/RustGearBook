@@ -2,7 +2,7 @@ FROM rust:1.59
 
 # rust and cargo toolchains
 RUN rustup component add rustfmt clippy rust-src
-RUN cargo install cargo-edit cargo-generate
+RUN cargo install cargo-edit
 
 # build inside the container
 ENV CARGO_BUILD_TARGET_DIR=/tmp/target
@@ -14,7 +14,7 @@ RUN apt-get update  \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# install wasm-pack
+# install wasm-pack and build
 RUN curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
 # keep running
